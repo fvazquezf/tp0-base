@@ -21,7 +21,11 @@ class Server:
         # TODO: Modify this program to handle signal to graceful shutdown
         # the server
         while True:
-            client_sock = self.__accept_new_connection()
+            try:
+                client_sock = self.__accept_new_connection()
+            except Exception as e:
+                logging.error("action: accept_new_connection | result: fail ")
+                break
             self.__handle_client_connection(client_sock)
 
     def __handle_client_connection(self, client_sock):
@@ -56,3 +60,9 @@ class Server:
         c, addr = self._server_socket.accept()
         logging.info(f'action: accept_connections | result: success | ip: {addr[0]}')
         return c
+    
+    def _sigterm_handler(self, _signo, _stack_frame):
+        logging.info(f'action: sigterm_handler | result: in_progress')
+        self._server_socket.shutdown(socket.SHUT_RDWR)
+        self._server_socket.close()
+        logging.info(f'action: sigterm_handler | result: success')
