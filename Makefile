@@ -37,3 +37,8 @@ docker-compose-down:
 docker-compose-logs:
 	docker-compose -f docker-compose-dev.yaml logs -f
 .PHONY: docker-compose-logs
+
+docker-netcat-test:
+	docker build -f ./scripts/Dockerfile -t "server_tester" ./scripts
+	docker run --rm --network tp0_testing_net server_tester check-server.sh
+.PHONY: docker-netcat-tests
