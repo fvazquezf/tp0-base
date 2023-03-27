@@ -1,6 +1,4 @@
 # TP0: Docker + Comunicaciones + Concurrencia
 
-En primer lugar, tuve que modificar el comando del makefile, ya que actualmente tengo instalada una versión deprecada de Docker. Cambié "docker compose" por "docker-compose". En el próximo trabajo práctico, me encargaré de actualizar la versión. Sin embargo, para no agregar complejidad en este momento, opté por una solución sencilla.
-
-Después, la ejecución del programa no se ve afectada de ninguna manera. El archivo se configuró con dos clientes y se puede modificar la cantidad de clientes configurados al ejecutar el script "python dockerComposeClientsScript.py <cantidad_de_clientes_deseada>".
-
+Para no tener que construir nuevamente las imágenes de Docker, se puede utilizar un volumen para inyectar la configuración en ellas. Para hacerlo, se debe configurar el volumen en el docker-compose y evitar la copia del archivo de configuración en el Dockerfile del servidor y del cliente utilizando un archivo .dockerignore. Para lograr una mayor uniformidad entre el cliente y el servidor, se podría realizar esta operación de manera más simétrica utilizando el .dockerignore en ambos casos.
+Para validar que esto ha funcionado, se pueden levantar las imágenes, modificar el archivo desde fuera de ellas y verificar que el cambio se haya reflejado dentro del contenedor. 

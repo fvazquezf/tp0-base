@@ -24,6 +24,8 @@ file.write("version: '3.9'\n"
            "    environment:\n"
            "      - PYTHONUNBUFFERED=1\n"
            "      - LOGGING_LEVEL=DEBUG\n"
+           "    volumes:\n"
+           "      - ./server/config.ini:/config.ini\n"
            "    networks:\n"
            "      - testing_net\n\n")
 
@@ -39,6 +41,8 @@ for i in range (input_param):
             "      - CLI_LOG_LEVEL=DEBUG\n"
             "    networks:\n"
             "      - testing_net\n"
+            "    volumes:\n"
+            "      - ./client/config.yaml:/config.yaml\n"
             "    depends_on:\n"
             "      - server\n\n"
         )
