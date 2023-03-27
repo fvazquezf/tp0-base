@@ -71,10 +71,11 @@ Modificar la definición del DockerCompose para agregar un nuevo cliente al proy
 ### Ejercicio N°1.1:
 Definir un script (en el lenguaje deseado) que permita crear una definición de DockerCompose con una cantidad configurable de clientes.
 
-Resolucion:
-    Primero tuve que modificar el comando del makefile, ya que actualmente tengo instalada una version vieja de docker. Cambie docker compose por docker-compose. En el proximo trabajo practico me encargare de actualizar la version pero para no agregar complejidad en este momento fui con la solucion simple.
+Resolución:
 
-    Luego, la ejecucion del programa no se modifica de ningun modo. El archivo quedo configurado con 2 clientes y al correr el script "python dockerComposeClientsScript.py <cantidad_de_clientes_deseadas>" se puede  modificar la cantidad de clientes configurados.
+    En primer lugar, tuve que modificar el comando del makefile, ya que actualmente tengo instalada una versión deprecada de Docker. Cambié "docker compose" por "docker-compose". En el próximo trabajo práctico, me encargaré de actualizar la versión. Sin embargo, para no agregar complejidad en este momento, opté por una solución sencilla.
+
+    Después, la ejecución del programa no se ve afectada de ninguna manera. El archivo se configuró con dos clientes y se puede modificar la cantidad de clientes configurados al ejecutar el script "python dockerComposeClientsScript.py <cantidad_de_clientes_deseada>".
 
 ### Ejercicio N°2:
 Modificar el cliente y el servidor para lograr que realizar cambios en el archivo de configuración no requiera un nuevo build de las imágenes de Docker para que los mismos sean efectivos. La configuración a través del archivo correspondiente (`config.ini` y `config.yaml`, dependiendo de la aplicación) debe ser inyectada en el container y persistida afuera de la imagen (hint: `docker volumes`).
