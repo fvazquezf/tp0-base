@@ -1,5 +1,7 @@
 import socket
 import logging
+from common.protocol import receive_bet, send_fail, send_success
+from common.utils import store_bets
 
 
 class Server:
@@ -18,15 +20,17 @@ class Server:
         finishes, servers starts to accept new connections again
         """
 
-        # TODO: Modify this program to handle signal to graceful shutdown
         # the server
         while True:
             try:
                 client_sock = self.__accept_new_connection()
+                self.__handle_client_connection(client_sock)
             except Exception as e:
                 logging.error("action: accept_new_connection | result: fail ")
                 break
-            self.__handle_client_connection(client_sock)
+
+
+
 
     def __handle_client_connection(self, client_sock):
         """
@@ -36,12 +40,18 @@ class Server:
         client socket will also be closed
         """
         try:
-            # TODO: Modify the receive to avoid short-reads
-            msg = client_sock.recv(1024).rstrip().decode('utf-8')
+            bet =  receive_bet(client_sock)
             addr = client_sock.getpeername()
-            logging.info(f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}')
-            # TODO: Modify the send to avoid short-writes
-            client_sock.send("{}\n".format(msg).encode('utf-8'))
+            logging.info(f'action: receive_bet | result: success | ip: {addr[0]} | msg: {bet.document}')
+            try:
+                store_bets([bet])
+                logging.info(f'action: store_bets | result: success | dni: {bet.document} | number: {bet.number}')
+                send_success(client_sock)
+            except BaseException as e:
+                send_fail(client_sock)
+                logging.error(f'action: store_bets | result: failed | error: {e}')
+
+
         except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")
         finally:
@@ -60,9 +70,10 @@ class Server:
         c, addr = self._server_socket.accept()
         logging.info(f'action: accept_connections | result: success | ip: {addr[0]}')
         return c
-    
+
     def _sigterm_handler(self, _signo, _stack_frame):
         logging.info(f'action: sigterm_handler | result: in_progress')
         self._server_socket.shutdown(socket.SHUT_RDWR)
         self._server_socket.close()
         logging.info(f'action: sigterm_handler | result: success')
+

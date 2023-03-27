@@ -18,22 +18,13 @@ services:
     image: client:latest
     entrypoint: /client
     environment:
-      - CLI_ID=1
+      - CLI_AGENCY=1
       - CLI_LOG_LEVEL=DEBUG
-    networks:
-      - testing_net
-    volumes:
-      - ./client/config.yaml:/config.yaml
-    depends_on:
-      - server
-
-  client2:
-    container_name: client2
-    image: client:latest
-    entrypoint: /client
-    environment:
-      - CLI_ID=2
-      - CLI_LOG_LEVEL=DEBUG
+      - CLI_NAME=Jhon
+      - CLI_LASTNAME=Doe
+      - CLI_BIRTHDATE=1999-03-01
+      - CLI_ID=104121
+      - CLI_NUMBER=1
     networks:
       - testing_net
     volumes:
