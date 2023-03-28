@@ -26,7 +26,7 @@ class Server:
                 client_sock = self.__accept_new_connection()
                 self.__handle_client_connection(client_sock)
             except Exception as e:
-                logging.error("action: accept_new_connection | result: fail ")
+                logging.error(f"action: accept_new_connection | result: fail {e}")
                 break
 
 
@@ -53,7 +53,7 @@ class Server:
 
 
         except OSError as e:
-            logging.error("action: receive_message | result: fail | error: {e}")
+            logging.error(f"action: receive_message | result: fail | error: {e}")
         finally:
             client_sock.close()
 

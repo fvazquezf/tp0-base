@@ -63,19 +63,18 @@ func (c *Client) SendBetAndValidate() {
 
 	answer := make([]byte, 1)
 	err = socket.RecvAll(answer)
-    log.Infof("Received data: %d result", ValidateResult(answer))
-    log.Infof("Received data: %d error", err)
-
 	if err == nil && ValidateResult(answer) {
-		log.Infof("action: bet_sent | result: success | ID: %v | number: %v",
+		log.Infof("action: bet_sent | result: success | ID: %v | number: %v | result: %v",
 			c.bet.ID,
 			c.bet.Number,
+			answer,
 		)
     } else {
 		log.Fatalf(
-	        "action: bet_sent | result: fail | ID: %v | error: %v",
+	        "action: bet_sent | result: fail | ID: %v | error: %v | answer: %v",
 			c.bet.ID,
 			err,
+			answer,
 		)
 	}
 }

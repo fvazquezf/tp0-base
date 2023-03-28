@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net"
 	"io"
-	log "github.com/sirupsen/logrus"
 )
 
 // wrapper for socket connection that handles send/recv
@@ -68,7 +67,6 @@ func (s *Socket) recvSome(data []byte, sz uint32) (int, error) {
 func (s *Socket) RecvAll(data []byte) error {
     received := 0
     sz := len(data)
-    log.Infof("Received data: %d bytes", sz)
     for received < sz {
         n, err := s.recvSome(data[received:], uint32(sz-received))
         if err != nil {

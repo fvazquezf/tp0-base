@@ -1,8 +1,8 @@
 # wrapper for send/recv of socket
 
-def sendall(sock, data):
+def sendall(sock, data, size):
     total_sent = 0
-    while total_sent < len(data):
+    while total_sent < size:
         sent = sock.send(data[total_sent:])
         if sent == 0:
             raise RuntimeError("socket connection broken")

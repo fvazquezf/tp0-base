@@ -47,8 +47,8 @@ def receive_bet(sock):
     return _deserialize_bet(bet_byte_array)
 
 def send_success(sock):
-    sendall(SUCCESS)
+    sendall(sock, bytearray(SUCCESS.to_bytes(1, byteorder='big')), 1)
 
 def send_fail(sock):
-    sendall(FAIL)
+    sendall(sock, bytearray(FAIL.to_bytes(1, byteorder='big')), 1)
 
