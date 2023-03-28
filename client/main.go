@@ -33,11 +33,7 @@ func InitConfig() (*viper.Viper, error) {
 	v.BindEnv("log", "level")
 
 	// Add clients user vaiables
-	v.BindEnv("name")
-	v.BindEnv("lastname")
-	v.BindEnv("birthdate")
-	v.BindEnv("id")
-	v.BindEnv("number")
+	v.BindEnv("batchmaxsize")
 
 	// Try to read configuration from config file. If config file
 	// does not exists then ReadInConfig will fail but configuration
@@ -72,10 +68,11 @@ func InitLogger(logLevel string) error {
 // PrintConfig Print all the configuration parameters of the program.
 // For debugging purposes only
 func PrintConfig(v *viper.Viper) {
-	logrus.Infof("action: config | result: success | client_agency: %s | server_address: %s | log_level: %s",
+	logrus.Infof("action: config | result: success | client_agency: %s | server_address: %s | log_level: %s | batch_max_size: %s",
 	    v.GetString("agency"),
 	    v.GetString("server.address"),
 	    v.GetString("log.level"),
+	    v.GetString("batchmaxsize"),
     )
 }
 
@@ -99,16 +96,7 @@ func main() {
 		LoopPeriod:    v.GetDuration("loop.period"),
 	}
 
-	bet := &common.Bet{
-			Name:      v.GetString("name"),
-			LastName:  v.GetString("lastname"),
-			BirthDate: v.GetString("birthdate"),
-			ID:        v.GetString("id"),
-			Number:    uint16(v.GetUint("number")),
-			AgencyId:  uint16(v.GetUint("agency")),
-		}
-
-	client := common.NewClient(clientConfig, bet)
+	client := common.NewClient(clientConfig, int(v.GetString("batchmaxsize"), int(v.GetString("agency"))))
 	logrus.Infof("action: NewClient | result: success")
 	client.SendBetAndValidate()
 }

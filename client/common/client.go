@@ -5,8 +5,11 @@ import (
     "os"
     "os/signal"
     "syscall"
+    "strings"
+    "bytes"
 	log "github.com/sirupsen/logrus"
 )
+const (DATASET_PATH = "dataset.csv")
 
 // ClientConfig Configuration used by the client
 type ClientConfig struct {
@@ -19,16 +22,17 @@ type ClientConfig struct {
 // Client Entity that encapsulates how
 type Client struct {
 	config    ClientConfig
-	connWrap  Socket
-	bet       *Bet
+	batchSize int
+	agencyId  int
 }
 
 // NewClient Initializes a new client receiving the configuration
 // as a parameter and the desired bet
-func NewClient(config ClientConfig, bet *Bet) *Client {
+func NewClient(config ClientConfig, batchSize int, agencyId int) *Client {
 	client := &Client{
-		config: config,
-		bet: bet,
+		config:    config,
+		batchSize: batchSize,
+		agencyId:  agencyId,
 	}
 	return client
 }
@@ -42,7 +46,7 @@ func (c *Client) SendBetAndValidate() {
 	socket, err := NewConnectedSocket(c.config.ServerAddress)
     if err != nil {
 		log.Fatalf(
-	        "action: connect | result: fail | Agendy: %v | error: %v",
+	        "action: connect | result: fail | Agency: %v | error: %v",
 			c.config.Agency,
 			err,
 		)
@@ -50,16 +54,70 @@ func (c *Client) SendBetAndValidate() {
     }
 	defer socket.Close()
 
-	betByteArray := SerializeBet(c.bet)
-	err = socket.SendAll(betByteArray)
-    if err != nil {
+	datasetReader, err := NewCsvParser(DATASET_PATH)
+	if err != nil {
 		log.Fatalf(
-	        "action: sendBet | result: fail | Agendy: %v | error: %v",
+	        "action: openDataset | result: fail | Agency: %v | error: %v",
 			c.config.Agency,
 			err,
 		)
         return
-    }
+	}
+	defer datasetReader.Close()
+
+	record, err := ReadLine()
+	var batch bytes.Buffer
+	packetsInBatch = 0
+	for err == nil {
+		bet := &common.Bet{
+			Name:      record[0],
+			LastName:  record[1],
+			BirthDate: record[3],
+			ID:        record[2],
+			Number:    record[4],
+			AgencyId:  agencyId,
+		}
+		betByteBuffer := SerializeBet(bet)
+		batch, batchState = AddBetToBatch(bet, batch, packetsInBatch, c.batchSize)
+
+		if batchStatus != BATCH_PARTWAY {
+			err = socket.SendAll(batch)
+			if err != nil {
+				log.Fatalf(
+					"action: sendBatch | result: fail | Agency: %v | error: %v",
+					c.config.Agency,
+					err,
+				)
+				return
+			}
+			batch.Truncate(0)
+			packetsInBatch = 0
+		}
+		if batchStatus == BATCH_FULL {
+			continue
+		} else {
+			record, err = ReadLine()
+		}
+	}
+	if err.Error() == "EOF" {
+		batch = AddNoMoreBatchesBytes(batch)
+		err = socket.SendAll(batch)
+		if err != nil {
+			log.Fatalf(
+				"action: sendBatch | result: fail | Agency: %v | error: %v",
+				c.config.Agency,
+				err,
+			)
+			return
+		}
+	} else {
+		log.Fatalf(
+			"action: readCDV | result: fail | Agency: %v | error: %v",
+			c.config.Agency,
+			err,
+		)
+		return
+	}
 
 	answer := make([]byte, 1)
 	err = socket.RecvAll(answer)
