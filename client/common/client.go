@@ -79,7 +79,7 @@ func (c *Client) SendBetAndValidate() {
 			return
 		}
 		batch.Reset()
-		answer := make([]byte, 1)
+		answer := make([]byte, 1) //esto es protocolo deberia esta encapsulado :/
 		err = socket.RecvAll(answer)
 		if err == nil && ValidateResult(answer) {
 			log.Infof("action: batch_sent | result: success | result: %v",
@@ -91,6 +91,31 @@ func (c *Client) SendBetAndValidate() {
 				err,
 				answer,
 			)
+			return
+		}
+	}
+}
+
+func (c *Client) CheckWinner() {
+	finished := NOT_FINISHED
+	for finished == NOT_FINISHED {
+		socket, err := NewConnectedSocket(c.config.ServerAddress)
+		if err != nil {
+			log.Fatalf(
+				"action: connect | result: fail | Agency: %v | error: %v",
+				c.config.Agency,
+				err,
+			)
+			return
+		}
+		defer socket.Close()
+		finished = CheckIfFinished(c.agencyId, socket)
+		if finished == NOT_FINISHED {
+			log.Infof("action: sleeping ")
+			time.Sleep(1 * time.Second)
+		} else {
+			log.Infof("action: server finished ")
+			ReceiveWinners(finished, socket)
 			return
 		}
 	}

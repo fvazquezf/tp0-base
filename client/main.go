@@ -102,4 +102,5 @@ func main() {
 	client := common.NewClient(clientConfig, batchSize, agency)
 	logrus.Infof("action: NewClient | result: success")
 	client.SendBetAndValidate()
+	client.CheckWinner()
 }

@@ -49,3 +49,8 @@ def load_bets() -> list[Bet]:
         for row in reader:
             yield Bet(row[0], row[1], row[2], row[3], row[4], row[5])
 
+def find_winners():
+    return list(filter(lambda bet: has_won(bet), load_bets()))
+
+
+

@@ -20,7 +20,7 @@ services:
     environment:
       - CLI_AGENCY=1
       - CLI_LOG_LEVEL=DEBUG
-      - CLI_BATCHMAXSIZE=100
+      - CLI_BATCHMAXSIZE=10000
     networks:
       - testing_net
     volumes:
@@ -36,7 +36,7 @@ services:
     environment:
       - CLI_AGENCY=2
       - CLI_LOG_LEVEL=DEBUG
-      - CLI_BATCHMAXSIZE=100
+      - CLI_BATCHMAXSIZE=10000
     networks:
       - testing_net
     volumes:
@@ -52,7 +52,7 @@ services:
     environment:
       - CLI_AGENCY=3
       - CLI_LOG_LEVEL=DEBUG
-      - CLI_BATCHMAXSIZE=100
+      - CLI_BATCHMAXSIZE=10000
     networks:
       - testing_net
     volumes:
@@ -68,7 +68,7 @@ services:
     environment:
       - CLI_AGENCY=4
       - CLI_LOG_LEVEL=DEBUG
-      - CLI_BATCHMAXSIZE=100
+      - CLI_BATCHMAXSIZE=10000
     networks:
       - testing_net
     volumes:
@@ -84,7 +84,7 @@ services:
     environment:
       - CLI_AGENCY=5
       - CLI_LOG_LEVEL=DEBUG
-      - CLI_BATCHMAXSIZE=100
+      - CLI_BATCHMAXSIZE=10000
     networks:
       - testing_net
     volumes:

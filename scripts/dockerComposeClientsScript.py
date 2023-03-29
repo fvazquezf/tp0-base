@@ -39,7 +39,7 @@ for i in range (input_param):
             "    environment:\n"
             "      - CLI_AGENCY="+str(i+1)+"\n"
             "      - CLI_LOG_LEVEL=DEBUG\n"
-            "      - CLI_BATCHMAXSIZE=100\n"
+            "      - CLI_BATCHMAXSIZE=10000\n"
             "    networks:\n"
             "      - testing_net\n"
             "    volumes:\n"

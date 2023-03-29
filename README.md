@@ -27,3 +27,6 @@ El protocolo y la clase Socket no son muy elegantes, pero son funcionales. Podr√
 Ahora se envian las apuestas en batches, al final de un batch hay 2 bytes que dicen si hay mas batches o no, esto es mas util para el proximo ejercicio. Pero en este caso se utilizan en el servidor para escribir las apuestas, enviar si todo salio bien y cerrar la conexion con el cliente.
 
 Los batches son de tamanio variable y dependen del largo de las apuestas que contienen. Se puede configurar la cantidad maxima que puede haber en un batch, ya que no podemos saber a priori cuantos entran. 
+
+
+----

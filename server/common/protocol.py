@@ -9,6 +9,10 @@ FAIL = 1
 MORE_BATCHES = 1234
 NO_MORE_BATCHES = 1235
 CLOSE_CONECTION = -1
+CLIENT_FINISHED = -2
+CLIENT_ASKING_RESPONSE = -3
+CLIENT_ID_START = 2000
+
 
 def _unpack_string(bytes, current_length):
     # Unpack the length of the string as a uint8
@@ -41,17 +45,51 @@ def _deserialize_bet(bytes):
     # Create and return the Bet object
     return Bet(agency_id, name, last_name, id, birthdate, number)
 
+def serialize_ids(id_list):
+    # Pack the number of ids in the array as a big-endian integer
+    result = struct.pack('>H', len(id_list))
+
+    # Iterate over each id in the list
+    for id in id_list:
+        # Convert the id to bytes and get its length
+        id_bytes = id.encode('utf-8')
+        id_length = len(id_bytes)
+
+        # Pack the length of the id as a big-endian integer
+        result += struct.pack('>H', id_length)
+
+        # Append the id bytes to the result
+        result += id_bytes
+
+    return result
+
+
 def receive_bet(sock):
     answer = recvall(sock, 2)
     bet_size = struct.unpack('>H', answer)[0]
-    if bet_size == MORE_BATCHES or bet_size == NO_MORE_BATCHES:
+    if bet_size == MORE_BATCHES: 
         return  CLOSE_CONECTION
+    if bet_size == NO_MORE_BATCHES:
+        return CLIENT_FINISHED
+    if bet_size > CLIENT_ID_START:
+        return CLIENT_ASKING_RESPONSE
     bet_byte_array = recvall(sock, int(bet_size))
     return _deserialize_bet(bet_byte_array)
+
+def send_winners(sock, winners):
+    answer = recvall(sock, 2)
+    clientID = struct.unpack('>H', answer)[0] - CLIENT_ID_START
+    winners = [item for item in winners if item[1] == clientID]
+    serialized_winners = serialize_ids(winners) 
+    sendall(sock, serialized_winners, len(serialized_winners))
 
 def send_success(sock):
     sendall(sock, bytearray(SUCCESS.to_bytes(1, byteorder='big')), 1)
 
 def send_fail(sock):
     sendall(sock, bytearray(FAIL.to_bytes(1, byteorder='big')), 1)
+
+def send_not_finnished(sock):
+    sendall(sock, bytearray(FAIL.to_bytes(2, byteorder='big')), 2)
+    
 
