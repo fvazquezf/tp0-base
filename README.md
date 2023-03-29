@@ -21,3 +21,9 @@ La respuesta consiste en un solo byte: 0 si se ha guardado correctamente y 1 si 
 El tamaño máximo del paquete es de 1030 bytes, debido al máximo en los cuatro campos variables, más las longitudes de cada uno y los cuatro bytes de los datos numéricos. Por lo tanto, no se puede exceder el tamaño máximo de paquete indicado por la cátedra.
 
 El protocolo y la clase Socket no son muy elegantes, pero son funcionales. Podrían ser un poco más simétricos para facilitar la programación.
+
+----
+
+Ahora se envian las apuestas en batches, al final de un batch hay 2 bytes que dicen si hay mas batches o no, esto es mas util para el proximo ejercicio. Pero en este caso se utilizan en el servidor para escribir las apuestas, enviar si todo salio bien y cerrar la conexion con el cliente.
+
+Los batches son de tamanio variable y dependen del largo de las apuestas que contienen. Se puede configurar la cantidad maxima que puede haber en un batch, ya que no podemos saber a priori cuantos entran. 
