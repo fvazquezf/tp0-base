@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -56,11 +57,11 @@ func InitLogger(logLevel string) error {
 		return err
 	}
 
-    customFormatter := &logrus.TextFormatter{
-      TimestampFormat: "2006-01-02 15:04:05",
-      FullTimestamp: false,
-    }
-    logrus.SetFormatter(customFormatter)
+	customFormatter := &logrus.TextFormatter{
+		TimestampFormat: "2006-01-02 15:04:05",
+		FullTimestamp:   false,
+	}
+	logrus.SetFormatter(customFormatter)
 	logrus.SetLevel(level)
 	return nil
 }
@@ -69,11 +70,11 @@ func InitLogger(logLevel string) error {
 // For debugging purposes only
 func PrintConfig(v *viper.Viper) {
 	logrus.Infof("action: config | result: success | client_agency: %s | server_address: %s | log_level: %s | batch_max_size: %s",
-	    v.GetString("agency"),
-	    v.GetString("server.address"),
-	    v.GetString("log.level"),
-	    v.GetString("batchmaxsize"),
-    )
+		v.GetString("agency"),
+		v.GetString("server.address"),
+		v.GetString("log.level"),
+		v.GetString("batchmaxsize"),
+	)
 }
 
 func main() {
@@ -95,8 +96,10 @@ func main() {
 		LoopLapse:     v.GetDuration("loop.lapse"),
 		LoopPeriod:    v.GetDuration("loop.period"),
 	}
+	batchSize, _ := strconv.Atoi(v.GetString("batchmaxsize"))
+	agency, _ := strconv.Atoi(v.GetString("agency"))
 
-	client := common.NewClient(clientConfig, int(v.GetString("batchmaxsize"), int(v.GetString("agency"))))
+	client := common.NewClient(clientConfig, batchSize, agency)
 	logrus.Infof("action: NewClient | result: success")
 	client.SendBetAndValidate()
 }

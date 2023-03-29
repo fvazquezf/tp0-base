@@ -1,15 +1,17 @@
 package common
 
 import (
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
-    "os"
-    "os/signal"
-    "syscall"
-    "strings"
-    "bytes"
+
 	log "github.com/sirupsen/logrus"
 )
-const (DATASET_PATH = "dataset.csv")
+
+const (
+	DATASET_PATH = "dataset.csv"
+)
 
 // ClientConfig Configuration used by the client
 type ClientConfig struct {
@@ -37,71 +39,37 @@ func NewClient(config ClientConfig, batchSize int, agencyId int) *Client {
 	return client
 }
 
-
 // Create a conection to the server and send bet, then wait response
 func (c *Client) SendBetAndValidate() {
 	sigChan := make(chan os.Signal, 1)
-    signal.Notify(sigChan, syscall.SIGTERM)
+	signal.Notify(sigChan, syscall.SIGTERM)
 
-	socket, err := NewConnectedSocket(c.config.ServerAddress)
-    if err != nil {
-		log.Fatalf(
-	        "action: connect | result: fail | Agency: %v | error: %v",
-			c.config.Agency,
-			err,
-		)
-        return
-    }
-	defer socket.Close()
-
-	datasetReader, err := NewCsvParser(DATASET_PATH)
+	datasetReader, err := NewCsvReader(DATASET_PATH)
 	if err != nil {
 		log.Fatalf(
-	        "action: openDataset | result: fail | Agency: %v | error: %v",
+			"action: openDataset | result: fail | Agency: %v | error: %v",
 			c.config.Agency,
 			err,
 		)
-        return
+		return
 	}
 	defer datasetReader.Close()
 
-	record, err := ReadLine()
-	var batch bytes.Buffer
-	packetsInBatch = 0
-	for err == nil {
-		bet := &common.Bet{
-			Name:      record[0],
-			LastName:  record[1],
-			BirthDate: record[3],
-			ID:        record[2],
-			Number:    record[4],
-			AgencyId:  agencyId,
+	batch := NewBatch(c.batchSize)
+	for !datasetReader.IsAtEnd() {
+		socket, err := NewConnectedSocket(c.config.ServerAddress)
+		if err != nil {
+			log.Fatalf(
+				"action: connect | result: fail | Agency: %v | error: %v",
+				c.config.Agency,
+				err,
+			)
+			return
 		}
-		betByteBuffer := SerializeBet(bet)
-		batch, batchState = AddBetToBatch(bet, batch, packetsInBatch, c.batchSize)
+		defer socket.Close()
 
-		if batchStatus != BATCH_PARTWAY {
-			err = socket.SendAll(batch)
-			if err != nil {
-				log.Fatalf(
-					"action: sendBatch | result: fail | Agency: %v | error: %v",
-					c.config.Agency,
-					err,
-				)
-				return
-			}
-			batch.Truncate(0)
-			packetsInBatch = 0
-		}
-		if batchStatus == BATCH_FULL {
-			continue
-		} else {
-			record, err = ReadLine()
-		}
-	}
-	if err.Error() == "EOF" {
-		batch = AddNoMoreBatchesBytes(batch)
-		err = socket.SendAll(batch)
+		batch.BuildBatch(datasetReader, c.config.Agency)
+		err = socket.SendAll(batch.buf.Bytes())
 		if err != nil {
 			log.Fatalf(
 				"action: sendBatch | result: fail | Agency: %v | error: %v",
@@ -110,30 +78,22 @@ func (c *Client) SendBetAndValidate() {
 			)
 			return
 		}
-	} else {
-		log.Fatalf(
-			"action: readCDV | result: fail | Agency: %v | error: %v",
-			c.config.Agency,
-			err,
-		)
-		return
-	}
-
-	answer := make([]byte, 1)
-	err = socket.RecvAll(answer)
-	if err == nil && ValidateResult(answer) {
-		log.Infof("action: bet_sent | result: success | ID: %v | number: %v | result: %v",
-			c.bet.ID,
-			c.bet.Number,
-			answer,
-		)
-    } else {
-		log.Fatalf(
-	        "action: bet_sent | result: fail | ID: %v | error: %v | answer: %v",
-			c.bet.ID,
-			err,
-			answer,
-		)
+		batch.Reset()
+		answer := make([]byte, 1)
+		err = socket.RecvAll(answer)
+		if err == nil && ValidateResult(answer) {
+			log.Infof("action: batch_sent | result: success | result: %v",
+				answer,
+			)
+		} else {
+			log.Fatalf(
+				"action: batch_sent | result: fail | error: %v | answer: %v",
+				err,
+				answer,
+			)
+			return
+		}
 	}
 }
+
 // esta funcion quedo un poco verbosa con el error handling, se podria manejar un poco mejor

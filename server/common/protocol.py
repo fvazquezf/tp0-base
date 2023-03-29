@@ -6,6 +6,9 @@ from common.sock import recvall, sendall
 
 SUCCESS = 0
 FAIL = 1
+MORE_BATCHES = 1234
+NO_MORE_BATCHES = 1235
+CLOSE_CONECTION = -1
 
 def _unpack_string(bytes, current_length):
     # Unpack the length of the string as a uint8
@@ -41,8 +44,8 @@ def _deserialize_bet(bytes):
 def receive_bet(sock):
     answer = recvall(sock, 2)
     bet_size = struct.unpack('>H', answer)[0]
-    logging.info(f'action: receive_bet | result: success | receive answer size | {bet_size}')
-
+    if bet_size == MORE_BATCHES or bet_size == NO_MORE_BATCHES:
+        return  CLOSE_CONECTION
     bet_byte_array = recvall(sock, int(bet_size))
     return _deserialize_bet(bet_byte_array)
 

@@ -1,6 +1,6 @@
 import socket
 import logging
-from common.protocol import receive_bet, send_fail, send_success
+from common.protocol import receive_bet, send_fail, send_success, CLOSE_CONECTION
 from common.utils import store_bets
 
 
@@ -39,21 +39,24 @@ class Server:
         If a problem arises in the communication with the client, the
         client socket will also be closed
         """
-        try:
-            bet =  receive_bet(client_sock)
-            addr = client_sock.getpeername()
-            logging.info(f'action: receive_bet | result: success | ip: {addr[0]} | msg: {bet.document}')
-            try:
-                store_bets([bet])
-                logging.info(f'action: store_bets | result: success | dni: {bet.document} | number: {bet.number}')
-                send_success(client_sock)
-            except BaseException as e:
-                send_fail(client_sock)
-                logging.error(f'action: store_bets | result: failed | error: {e}')
-
-
+        try: 
+            bets = []
+            bet = receive_bet(client_sock)
+            while bet != CLOSE_CONECTION:
+                bets.append(bet)
+                bet = receive_bet(client_sock)
+            logging.info(f'action: recieved 1 full batch | result: success')
         except OSError as e:
             logging.error(f"action: receive_message | result: fail | error: {e}")
+            client_sock.close()
+            return
+        try:
+            store_bets(bets)
+            logging.info(f'action: store_bets | result: success ')
+            send_success(client_sock)
+        except BaseException as e:
+            send_fail(client_sock)
+            logging.error(f'action: store_bets | result: failed | error: {e}')
         finally:
             client_sock.close()
 
