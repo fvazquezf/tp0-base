@@ -6,6 +6,7 @@ from common.sock import recvall, sendall
 
 SUCCESS = 0
 FAIL = 1
+NOT_FINISHED = 65535
 MORE_BATCHES = 1234
 NO_MORE_BATCHES = 1235
 CLOSE_CONECTION = -1
@@ -52,7 +53,7 @@ def serialize_ids(id_list):
     # Iterate over each id in the list
     for id in id_list:
         # Convert the id to bytes and get its length
-        id_bytes = id.encode('utf-8')
+        id_bytes = id.document.encode('utf-8')
         id_length = len(id_bytes)
 
         # Pack the length of the id as a big-endian integer
@@ -79,9 +80,12 @@ def receive_bet(sock):
 def send_winners(sock, winners):
     answer = recvall(sock, 2)
     clientID = struct.unpack('>H', answer)[0] - CLIENT_ID_START
-    winners = [item for item in winners if item[1] == clientID]
-    serialized_winners = serialize_ids(winners) 
+    agencyWinners = [item for item in winners if item.agency == clientID]
+    logging.info(f'action: finding agency winners | result: success | Found: {len(agencyWinners)}')
+    serialized_winners = serialize_ids(agencyWinners) 
     sendall(sock, serialized_winners, len(serialized_winners))
+    logging.info(f'action: sending winners | result: success | to: {clientID} ')
+
 
 def send_success(sock):
     sendall(sock, bytearray(SUCCESS.to_bytes(1, byteorder='big')), 1)
@@ -90,6 +94,6 @@ def send_fail(sock):
     sendall(sock, bytearray(FAIL.to_bytes(1, byteorder='big')), 1)
 
 def send_not_finnished(sock):
-    sendall(sock, bytearray(FAIL.to_bytes(2, byteorder='big')), 2)
+    sendall(sock, bytearray(NOT_FINISHED.to_bytes(2, byteorder='big')), 2)
     
 

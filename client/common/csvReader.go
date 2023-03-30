@@ -42,6 +42,7 @@ func (p *CsvReader) ReadLine() ([]string, error) {
 
 func (p *CsvReader) IsAtEnd() bool {
 	pos, _ := p.file.Seek(0, io.SeekCurrent)
+	// log.Infof("action: isAtEnd is true: current: %v, end: %v ", pos, p.end)
 	return pos == p.end
 }
 

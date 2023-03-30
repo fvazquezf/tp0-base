@@ -13,7 +13,7 @@ const (
 	FAIL            = false
 	MORE_BATCHES    = 1234
 	NO_MORE_BATCHES = 1235
-	NOT_FINISHED    = 1
+	NOT_FINISHED    = 65535
 )
 
 func SerializeBet(bet *Bet) *bytes.Buffer {
@@ -102,7 +102,7 @@ func ValidateResult(answer []byte) bool {
 
 func CheckIfFinished(agencyId int, socket *Socket) int {
 	msg := make([]byte, U16SIZE)
-	binary.BigEndian.PutUint16(msg, uint16(agencyId))
+	binary.BigEndian.PutUint16(msg, uint16(agencyId+2000))
 	err := socket.SendAll(msg)
 	if err != nil {
 		log.Fatalf(

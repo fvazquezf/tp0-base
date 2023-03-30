@@ -26,11 +26,11 @@ class Server:
         while True:
             try:
                 client_sock = self.__accept_new_connection()
-                logging.info(f'action: finished clients | {finished_clients}')
                 if len(finished_clients) == CLIENTS_AMMOUNT:
                     if not winners:
                         logging.info(f'action: finding winners | result: in_progress ')
                         winners = find_winners()
+                        logging.info(f'action: sorteo | result: success')
                         logging.info(f'action: finding winners | result: success | Found: {len(winners)} ')
                     send_winners(client_sock, winners)
                 else:
@@ -38,9 +38,6 @@ class Server:
             except Exception as e:
                 logging.error(f"action: accept_new_connection | result: fail {e}")
                 break
-
-
-
 
     def __handle_client_connection(self, client_sock, finished_clients):
         """
@@ -52,10 +49,9 @@ class Server:
         try: 
             bets = []
             bet = receive_bet(client_sock)
-            while bet != CLOSE_CONECTION and bet != CLIENT_FINISHED:
+            while bet != CLOSE_CONECTION and bet != CLIENT_FINISHED and bet != CLIENT_ASKING_RESPONSE:
                 bets.append(bet)
                 bet = receive_bet(client_sock)
-            logging.info(f'action: recieved 1 full batch | result: success')
         except OSError as e:
             logging.error(f"action: receive_message | result: fail | error: {e}")
             client_sock.close()
@@ -65,14 +61,10 @@ class Server:
             return
         try:
             store_bets(bets)
-            logging.info(f'action: store_bets | result: success ')
             send_success(client_sock)
-            logging.info(f'action: bet received | result: success | {bet}')
             if bet == CLIENT_FINISHED:
-                finished_clients.add(bets[0].agency)
+                finished_clients.add(bets[-1].agency)
                 logging.info(f'action: client finished | result: success | {bets[0].agency}')
-                if len(finished_clients) == CLIENTS_AMMOUNT:
-                    logging.info(f'action: sorteo | result: success')
         except BaseException as e:
             send_fail(client_sock)
             logging.error(f'action: store_bets | result: failed | error: {e}')
@@ -87,7 +79,6 @@ class Server:
         Then connection created is printed and returned
         """
         # Connection arrived
-        logging.info('action: accept_connections | result: in_progress')
         c, addr = self._server_socket.accept()
         logging.info(f'action: accept_connections | result: success | ip: {addr[0]}')
         return c

@@ -56,7 +56,6 @@ func (b *Batch) Reset() {
 
 func (b *Batch) BuildBatch(datasetReader *CsvReader, agency string) {
 	for !b.isFull {
-		// time.Sleep(5 * time.Second)
 		record, err := datasetReader.ReadLine()
 		if err != nil {
 			if err.Error() == "EOF" {
