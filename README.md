@@ -39,3 +39,11 @@ En caso de que el servidor haya realizado el sorteo, éste responderá con la ca
 
 -------
 
+En este caso, debido a restricciones de tiempo y alcance, el ejercicio se ha resuelto utilizando hilos. Al recibir una nueva conexión, el servidor lanza un nuevo hilo que se encarga de procesar al cliente y lo guarda en un diccionario. Hay dos elementos protegidos en el programa: una lista de apuestas con un lock y una barrera, y el acceso de escritura al archivo con otro lock.
+
+La lectura del archivo no está bloqueada adecuadamente, ya que solo se utiliza al cargar la lista de ganadores. Aunque no es la solución ideal, esto funciona en el presente caso. La lista se utiliza para mantener a los clientes en espera hasta que envían todas sus apuestas. Cuando la barrera se completa, los hilos se liberan y el primero en llegar a fillList llena la lista. Luego se filtra una copia de la lista para encontrar los ganadores de cada agencia. Ya que no se realizan más apuestas, estos accesos solo son de lectura y no necesitan protección.
+
+El protocolo se ha modificado levemente para que los clientes no se duerman mientras esperan a los ganadores; en su lugar, quedan bloqueados en la lectura. Sin embargo, se debe enviar el ID de la agencia al servidor dos veces: una para bloquearse en la barrera y otra para obtener los ganadores. Esto podría simplificarse en el futuro.
+
+El tp quedo bastante atado con alambres por problemas de estimacion. Principalmente el protocolo y la separacion del mismo con el socket y el cliente/servidor. Los temas de concurrencia tambien podrian haber quedado mejor, aunque en este caso como no hay mucho procesamiento del lado de python, el Lock del interprete no tiene un impacto importante en performance. 
+El manejo de errores en Go tambien quedo muy feo, fue mi primer experiencia con el lenguaje y no tener excepciones es distinto. Por esto quedo un poco mas verboso de los esprable. 
