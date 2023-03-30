@@ -1,7 +1,8 @@
 import csv
 import datetime
+import logging
 import time
-
+import threading
 
 """ Bets storage location. """
 STORAGE_FILEPATH = "./bets.csv"
@@ -50,7 +51,13 @@ def load_bets() -> list[Bet]:
             yield Bet(row[0], row[1], row[2], row[3], row[4], row[5])
 
 def find_winners():
+    logging.info(f'action: sorteo | result: success')
     return list(filter(lambda bet: has_won(bet), load_bets()))
 
-
-
+class SafeBetStore:
+    def __init__(self):
+        self.lock = threading.Lock()
+    
+    def store_bets(self, bets):
+        with self.lock:
+            store_bets(bets)

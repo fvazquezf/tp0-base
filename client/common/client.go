@@ -93,28 +93,20 @@ func (c *Client) SendBetAndValidate() {
 }
 
 func (c *Client) CheckWinner() {
-	finished := NOT_FINISHED
-	for finished == NOT_FINISHED {
-		socket, err := NewConnectedSocket(c.config.ServerAddress)
-		if err != nil {
-			log.Fatalf(
-				"action: connect | result: fail | Agency: %v | error: %v",
-				c.config.Agency,
-				err,
-			)
-			return
-		}
-		defer socket.Close()
-		finished = CheckIfFinished(c.agencyId, socket)
-		if finished == NOT_FINISHED {
-			log.Infof("action: sleeping ")
-			time.Sleep(2 * time.Second)
-		} else {
-			log.Infof("action: server finished ")
-			ReceiveWinners(finished, socket)
-			return
-		}
+	socket, err := NewConnectedSocket(c.config.ServerAddress)
+	if err != nil {
+		log.Fatalf(
+			"action: connect | result: fail | Agency: %v | error: %v",
+			c.config.Agency,
+			err,
+		)
+		return
 	}
+	defer socket.Close()
+	log.Infof("action: waiting server ")
+	ammountWinners := AskForHowManyWinners(c.agencyId, socket)
+	log.Infof("action: server finished ")
+	ReceiveWinners(ammountWinners, socket)
 }
 
 // esta funcion quedo un poco verbosa con el error handling, se podria manejar un poco mejor

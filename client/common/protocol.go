@@ -100,16 +100,17 @@ func ValidateResult(answer []byte) bool {
 	}
 }
 
-func CheckIfFinished(agencyId int, socket *Socket) int {
+func AskForHowManyWinners(agencyId int, socket *Socket) int {
 	msg := make([]byte, U16SIZE)
 	binary.BigEndian.PutUint16(msg, uint16(agencyId+2000))
 	err := socket.SendAll(msg)
+	err = socket.SendAll(msg)
 	if err != nil {
 		log.Fatalf(
 			"action: recieve_finish | result: fail | error: %v",
 			err,
 		)
-		return NOT_FINISHED
+		return -1
 	}
 	buffer := make([]byte, 2)
 	err = socket.RecvAll(buffer)
@@ -118,7 +119,7 @@ func CheckIfFinished(agencyId int, socket *Socket) int {
 			"action: recieve_finish | result: fail | error: %v",
 			err,
 		)
-		return NOT_FINISHED
+		return -1
 	}
 	return int(binary.BigEndian.Uint16(buffer))
 }

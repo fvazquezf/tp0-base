@@ -36,3 +36,6 @@ He encontrado un error inusual y he modificado uno de los archivos correspondien
 El protocolo utilizado ha sido prácticamente el mismo que en el ejercicio anterior. Se han agregado mensajes para preguntar si el proceso ha finalizado, en los que el cliente envía su "id + 2000" en 2 bytes en big endian. El servidor responde con un valor de 65535 en 2 bytes en big endian en caso de que el sorteo no haya finalizado. En ese caso, el cliente cierra la conexión y se va a dormir, para luego volver a intentarlo.
 
 En caso de que el servidor haya realizado el sorteo, éste responderá con la cantidad de apuestas en las que la agencia ha ganado, seguida del largo del DNI y el DNI correspondiente a cada apuesta ganadora.
+
+-------
+

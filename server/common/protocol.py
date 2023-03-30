@@ -80,7 +80,7 @@ def receive_bet(sock):
 def send_winners(sock, winners):
     answer = recvall(sock, 2)
     clientID = struct.unpack('>H', answer)[0] - CLIENT_ID_START
-    agencyWinners = [item for item in winners if item.agency == clientID]
+    agencyWinners = [item for item in winners.copy() if item.agency == clientID]
     logging.info(f'action: finding agency winners | result: success | Found: {len(agencyWinners)}')
     serialized_winners = serialize_ids(agencyWinners) 
     sendall(sock, serialized_winners, len(serialized_winners))
